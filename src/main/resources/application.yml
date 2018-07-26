@@ -1,0 +1,158 @@
+server:
+  port: 8380
+  servlet:
+    context-path: /easyvue
+    session:
+      timeout: 30
+#logging:
+#  config: classpath:log4j2.xml  
+publicKey: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKWXkP5s+5zwzIwG0umvIGTTSFFu+oN2MgjA521v3Xf9UyOF8UrRuGKnnihlSnoMLR2y29LhnZWgr3O/lTjmCwMCAwEAAQ==
+spring:
+  ##数据库连接信息
+  datasource:
+    url: jdbc:mysql://localhost:3306/easyvue?useUnicode=true&characterEncoding=utf-8
+    username: root
+    #password: OYHVNm+jP3fli0BKd7vwVzdTbHVtiokUVODn01kGP1zV1MtvsxcQAnWmaeZpJYslnXZHO2QkCdO7JFi7+Odzxg==
+    password: root
+    driver-class-name: com.mysql.jdbc.Driver
+    ###################以下为druid增加的配置###########################
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid: 
+      # 下面为连接池的补充设置，应用到上面所有数据源中
+      # 初始化大小，最小，最大
+      initial-size: 5
+      min-idle: 5
+      max-active: 1000
+      # 配置获取连接等待超时的时间
+      max-wait: 60000
+      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      time-between-eviction-runs-millis: 60000
+      # 配置一个连接在池中最小生存的时间，单位是毫秒
+      min-evictable-idle-time-millis:  300000
+      validation-query: SELECT 1 FROM DUAL
+      test-while-idle:  true
+      test-on-borrow: false
+      test-on-return: false
+      # 打开PSCache，并且指定每个连接上PSCache的大小
+      pool-prepared-statements:  true
+      max-pool-prepared-statement-per-connection-size: 20
+      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
+      filters: stat,wall,log4j2
+      #connect-properties: config.decrypt=true;config.decrypt.key=${public-key}
+      #打开mergeSql功能；慢SQL记录
+      filter:
+        stat:
+          merge-sql: true
+          slow-sql-millis: 5000
+        config:
+          enabled: false
+      # 合并多个DruidDataSource的监控数据
+      use-global-data-source-stat: true
+      # uri监控
+      web-stat-filter:
+        enabled: true
+        url-pattern: /*
+        exclusions: /druid/*,*.js,*.gif,*.jpg,*.png,*.css,*.ico
+        #session-stat-enable: true
+        profile-enable: true
+      # 访问配置  
+      stat-view-servlet:
+        enabled: true
+        #allow: 127.0.0.1 
+        login-password: druid 
+        login-username: admin
+        url-pattern: /druid/*
+      ###############以上为配置druid添加的配置########################################      
+  security:
+    user:
+      name: admin
+      password: monitor
+  boot:
+    admin:
+      context-path: /sys-monitor
+      client:
+        url: http://192.168.1.3:8380/easyvue/sys-monitor
+      #ui:
+      #  title: 系统监控
+  application:
+    name: operation   
+    admin:
+      enabled: true
+  profiles:
+    active:
+      - secure
+
+    
+mybatis-plus:
+  # 如果是放在src/main/java目录下 classpath:/com/yourpackage/*/mapper/*Mapper.xml
+  # 如果是放在resource目录 classpath:/mapper/*Mapper.xml
+  mapper-locations: classpath:/mapper/**/*.xml
+  #实体扫描，多个package用逗号或者分号分隔
+  typeAliasesPackage: com.greattimes.easyvue.system.entity
+  global-config:
+    #主键类型  0:"数据库ID自增", 1:"用户输入ID",2:"全局唯一ID (数字类型唯一ID)", 3:"全局唯一ID UUID";
+    id-type: 3
+    #字段策略 0:"忽略判断",1:"非 NULL 判断"),2:"非空判断"
+    field-strategy: 2
+    #驼峰下划线转换
+    db-column-underline: false
+    #刷新mapper 调试神器
+    #refresh-mapper: true
+    #数据库大写下划线转换
+    #capital-mode: true
+    # Sequence序列接口实现类配置
+    #key-generator: com.baomidou.mybatisplus.incrementer.OracleKeyGenerator
+    #逻辑删除配置（下面3个配置）
+    #logic-delete-value: 1
+    #logic-not-delete-value: 0
+    #sql-injector: com.baomidou.mybatisplus.mapper.LogicSqlInjector
+    #自定义填充策略接口实现
+    #meta-object-handler: com.baomidou.springboot.MyMetaObjectHandler
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    #配置JdbcTypeForNull
+    jdbc-type-for-null: 'null'
+
+management:
+  server:
+    port: 8381
+    servlet:
+      context-path:  /monitor
+  endpoint:
+    health:
+      show-details: always
+    shutdown:
+      enabled: true   
+    beans:
+      cache:
+        time-to-live: 10
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+info:
+  version: 4.0  
+  name: 全景易视
+  compony: 北京盛世全景科技股份有限公司     
+
+---
+spring:
+  profiles: insecure
+
+---
+spring:
+  profiles: secure
+  boot:
+    admin:
+      client:
+        username: admin
+        password: monitor
+        instance:
+          prefer-ip: true
+          metadata: 
+            user.name: "admin"         #These two are needed so that the server
+            user.password: "monitor" #can access the protected client endpoints
+      ui: 
+        title: 测试
+  
