@@ -1,3 +1,3 @@
 # easyboot
-easyvue 的后端接口
+easyvue 的服务端
 基于springboot2 
